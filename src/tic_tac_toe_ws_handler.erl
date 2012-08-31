@@ -40,7 +40,7 @@ websocket_init(_TransportName, Req, _Opts) ->
 
     case global:whereis_name({glm, Gid}) of
         undefined ->
-            gl_control:start_game_instance(tic_tac_toe, Gid, []);
+            gl_control:start_game_instance(Gid);
         _ ->
             ok
     end,
@@ -53,7 +53,7 @@ websocket_init(_TransportName, Req, _Opts) ->
 %% For this MpServer we support only 1 type of message.
 %% Get a message and pass it directly to GL with message_id=1.
 websocket_handle({text, Msg}, Req, State=#state{gid=Gid, userid=Uid}) ->
-    gl_control:send_actionbundle(Gid, {Uid, [{1, Msg}]}),
+    gl_control:send_actions(Gid, Uid, [{<<"front_msg">>, Msg}]),
     {ok, Req, State}.
 
 websocket_info({send_message, Msg}, Req, State) ->
