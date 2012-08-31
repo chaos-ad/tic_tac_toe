@@ -6,6 +6,7 @@
         kernel,
         stdlib,
         lager,
+        gl_service,
         cowboy
     ]},
     {mod, { tic_tac_toe_app, [] }},
