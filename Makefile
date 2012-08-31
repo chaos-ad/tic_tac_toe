@@ -26,7 +26,7 @@ distclean: clean
 	rm -rfv ebin deps logs
 
 start:
-	exec erl -pa ebin deps/*/ebin -boot start_sasl -config priv/app.config -s $(APP)
+	exec erl -pa ebin deps/*/ebin -boot start_sasl -config priv/app.config -s reloader -s $(APP)
 
 test:
 	mkdir -p .eunit
