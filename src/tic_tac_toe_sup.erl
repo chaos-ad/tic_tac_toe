@@ -20,7 +20,8 @@ start_link() ->
 
 init([]) ->
     {ok, { {one_for_one, 5, 10}, [
-        ?CHILD(tic_tac_toe_web)
+        ?CHILD(tic_tac_toe_web),
+        ?CHILD(ws_mpserver)
     ]} }.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
