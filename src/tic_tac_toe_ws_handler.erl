@@ -9,8 +9,8 @@
         websocket_info/3, websocket_terminate/3]).
 
 -record(state, {
-        gid :: mpserver_types:gid(),
-        userid :: mpserver_types:userid()
+        gid :: gl_mpserver_types:gid(),
+        userid :: gl_mpserver_types:userid()
     }).
 
 init({_Any, http}, Req, []) ->
