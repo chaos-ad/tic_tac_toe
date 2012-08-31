@@ -31,7 +31,7 @@ websocket_init(_TransportName, Req, _Opts) ->
     {[<<"play">>, Gid, UserId], Req} = cowboy_http_req:path(Req),
 
     pg2:create({web_handler, Gid}),
-    case lists:member(self(), pg2:get_members({play_handler, Gid})) of
+    case lists:member(self(), pg2:get_members({web_handler, Gid})) of
         false -> pg2:join({web_handler, Gid}, self());
         true -> ok
     end,
