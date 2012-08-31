@@ -4,9 +4,10 @@
 -export([start_link/0]).
 
 start_link() ->
-    spawn_link(fun loop/0).
+    {ok, spawn_link(fun loop/0)}.
 
 loop() ->
+    register(ws_mpserver, self()),
     receive
         {send_message, Gid, Recipients, Msg, Args} ->
             Pids = get_recipients(Gid, Recipients),
