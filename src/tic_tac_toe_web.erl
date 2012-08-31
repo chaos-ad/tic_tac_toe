@@ -5,7 +5,13 @@ start_link() ->
     Dispatch = [
         {'_', [
                 {[<<"static">>, '...'], cowboy_http_static,
-                    [{directory, {priv_dir, tic_tac_toe, [<<"static">>]}}]},
+                    [
+                        {directory, {priv_dir, tic_tac_toe, [<<"static">>]}},
+                        {mimetypes, [
+                            {<<".html">>, [<<"text/html">>]},
+                            {<<".js">>, [<<"application/javascript">>]}
+                        ]}
+                    ]},
                 {[<<"play">>, '_', '_'], tic_tac_toe_ws_handler, []}
             ]
         }
