@@ -29,15 +29,22 @@ handle(Req, State) ->
 
 websocket_init(_TransportName, Req, _Opts) ->
     {[<<"play">>, Gid, UserId], Req} = cowboy_http_req:path(Req),
-    gproc:reg({n, l, {play_handler, Gid, UserId}}),
-    gproc:reg({p, l, {play_handler, Gid}}), % Register to gamers pool
-    % HACK: start game if it does not exist. In this oversimplified MpServer
-    % we will check if game exists, and, if not, start it.
-    % This is (probably?) unnecessary in real MpServer
-    case gproc:lookup_pids({n, l, {glm, Gid}}) of
-        [] -> gl_control:start_game_instance(tic_tac_toe, Gid, []);
-        _ -> ok
+
+    pg2:create({play_handler, Gid}),
+    case lists:member(self(), pg2:get_members({play_handler, Gid})) of
+        false -> pg2:join({play_handler, Gid}, self());
+        true -> ok
     end,
+
+    global:register_name({play_handler, Gid, UserId}, self()),
+
+    case global:whereis_name({glm, Gid}) of
+        undefined ->
+            gl_control:start_game_instance(tic_tac_toe, Gid, []);
+        _ ->
+            ok
+    end,
+
     gl_control:user_join(Gid, UserId),
     {ok, Req, #state{gid=Gid, userid=UserId}}.
 
