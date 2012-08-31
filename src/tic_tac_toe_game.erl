@@ -78,9 +78,7 @@ handle_response({<<"ok">>, GameState, Actions}, State) ->
 
 map_actions(List) ->
     {_,Actions} = lists:unzip(List),
-    MappedActions = proplists:delete(undefined, lists:map(fun map_action/1, Actions)),
-    lager:debug("mapped actions: ~p", [MappedActions]),
-    MappedActions.
+    proplists:delete(undefined, lists:map(fun map_action/1, Actions)).
 
 map_action([{<<"start_timer">>, [
         {<<"id">>, ID},
