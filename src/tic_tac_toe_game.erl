@@ -34,38 +34,32 @@ init(Args) ->
     {ok, LuaPid} = moon:start_vm(),
     ok = moon:load(LuaPid, LuaModule),
     {ok, Response} = moon:call(LuaPid, "init", [GameArgs]),
-%     lager:debug("~p: lua response: ~p", [?MODULE, Response]),
     State = #state{callback=Callback, lua_pid=LuaPid},
     handle_response(Response, State).
 
-handle_user_join(UserID, State=#state{gamestate=_GameState, lua_pid=LuaPid}) ->
+handle_user_join(UserID, State=#state{gamestate=GameState, lua_pid=LuaPid}) ->
     lager:debug("~p: handle_user_join: userid=~p", [?MODULE, UserID]),
-    {ok, Response} = moon:call(LuaPid, "handle_user_join", [UserID]),
-%     lager:debug("~p: lua response: ~p", [?MODULE, Response]),
+    {ok, Response} = moon:call(LuaPid, "handle_user_join", [UserID, GameState]),
     handle_response(Response, State).
 
-handle_user_leave(UserID, State=#state{gamestate=_GameState, lua_pid=LuaPid}) ->
+handle_user_leave(UserID, State=#state{gamestate=GameState, lua_pid=LuaPid}) ->
     lager:debug("~p: handle_user_join: userid=~p", [?MODULE, UserID]),
-    {ok, Response} = moon:call(LuaPid, "handle_user_leave", [UserID]),
-%     lager:debug("~p: lua response: ~p", [?MODULE, Response]),
+    {ok, Response} = moon:call(LuaPid, "handle_user_leave", [UserID, GameState]),
     handle_response(Response, State).
 
-handle_action(UserID, Action, Args, State=#state{gamestate=_GameState, lua_pid=LuaPid}) ->
+handle_action(UserID, Action, Args, State=#state{gamestate=GameState, lua_pid=LuaPid}) ->
     lager:debug("~p: handle_action: action=~p, userid=~p", [?MODULE, Action, UserID]),
-    {ok, Response} = moon:call(LuaPid, "handle_action", [UserID, Action, Args]),
-%     lager:debug("~p: lua response: ~p", [?MODULE, Response]),
+    {ok, Response} = moon:call(LuaPid, "handle_action", [UserID, Action, Args, GameState]),
     handle_response(Response, State).
 
-handle_timer(ID, Elapsed, State=#state{gamestate=_GameState, lua_pid=LuaPid}) ->
+handle_timer(ID, Elapsed, State=#state{gamestate=GameState, lua_pid=LuaPid}) ->
     lager:debug("~p: handle_timer: id=~p, elapsed=~p", [?MODULE, ID, Elapsed]),
-    {ok, Response} = moon:call(LuaPid, "handle_timer", [ID, Elapsed]),
-%     lager:debug("~p: lua response: ~p", [?MODULE, Response]),
+    {ok, Response} = moon:call(LuaPid, "handle_timer", [ID, Elapsed, GameState]),
     handle_response(Response, State).
 
-handle_timer_complete(ID, Elapsed, State=#state{gamestate=_GameState, lua_pid=LuaPid}) ->
+handle_timer_complete(ID, Elapsed, State=#state{gamestate=GameState, lua_pid=LuaPid}) ->
     lager:debug("~p: handle_timer_complete: id=~p, elapsed=~p", [?MODULE, ID, Elapsed]),
-    {ok, Response} = moon:call(LuaPid, "handle_timer_complete", [ID, Elapsed]),
-%     lager:debug("~p: lua response: ~p", [?MODULE, Response]),
+    {ok, Response} = moon:call(LuaPid, "handle_timer_complete", [ID, Elapsed, GameState]),
     handle_response(Response, State).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -76,9 +70,10 @@ handle_response({<<"stop">>, GameState, Actions}, State) ->
 handle_response({<<"ok">>, GameState, Actions}, State) ->
     {ok, State#state{gamestate=GameState}, map_actions(Actions)}.
 
-map_actions(List) ->
-    {_,Actions} = lists:unzip(List),
-    proplists:delete(undefined, lists:map(fun map_action/1, Actions)).
+map_actions(Actions) ->
+    Mapped = proplists:delete(undefined, lists:map(fun map_action/1, Actions)),
+    lager:debug("actions: ~p", [Mapped]),
+    Mapped.
 
 map_action([{<<"start_timer">>, [
         {<<"id">>, ID},
@@ -96,13 +91,13 @@ map_action([{<<"kick_player">>, [{<<"userid">>, ID}]}]) when is_binary(ID) ->
     {kick_player, ID};
 
 map_action([{<<"message">>, [
-        {<<"recipients">>, Recipients},
         {<<"cmd">>, Cmd},
-        {<<"args">>, Args}]}])
-        when is_list(Recipients) orelse
-             is_binary(Recipients) andalso
-             is_binary(Cmd) andalso
-             is_binary(Args) ->
+        {<<"args">>, Args},
+        {<<"recipients">>, Recipients}
+    ]}]) when is_list(Recipients) orelse
+              is_binary(Recipients) andalso
+              is_binary(Cmd) andalso
+              is_binary(Args) ->
     {message, {map_recipients(Recipients), Cmd, Args}};
 
 map_action(Action) ->
@@ -114,8 +109,7 @@ map_repeats(Repeats) when is_integer(Repeats) -> Repeats.
 
 map_recipients(<<"all">>) -> all;
 map_recipients(UserID) when is_binary(UserID) -> UserID;
-map_recipients(UserIDList) when is_list(UserIDList) ->
-    element(2, lists:unzip(UserIDList)).
+map_recipients(UserIDList) when is_list(UserIDList) -> UserIDList.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

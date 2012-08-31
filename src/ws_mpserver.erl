@@ -7,7 +7,7 @@ start_link() ->
     {ok, spawn_link(fun loop/0)}.
 
 loop() ->
-    register(ws_mpserver, self()),
+    application:set_env(gl_service, mpserver_node, self()),
     receive
         {send_message, Gid, Recipients, Msg, Args} ->
             Pids = get_recipients(Gid, Recipients),
@@ -25,4 +25,4 @@ get_recipients(Gid, UserId) when is_binary(UserId) ->
     [global:whereis_name({web_handler, Gid, UserId})];
 
 get_recipients(Gid, UserIds) when is_list(UserIds) ->
-    [get_recipients(Gid, UserId) || UserId <- UserIds].
+    lists:flatten([get_recipients(Gid, UserId) || UserId <- UserIds]).
