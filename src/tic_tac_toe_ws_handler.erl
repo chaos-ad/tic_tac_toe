@@ -48,10 +48,6 @@ websocket_init(_TransportName, Req, _Opts) ->
     gl_control:user_join(Gid, UserId),
     {ok, Req, #state{gid=Gid, userid=UserId}}.
 
-%% @doc User sent a message
-%%
-%% For this MpServer we support only 1 type of message.
-%% Get a message and pass it directly to GL with message_id=1.
 websocket_handle({text, Msg}, Req, State=#state{gid=Gid, userid=Uid}) ->
     gl_control:send_actions(Gid, Uid, [{<<"front_msg">>, Msg}]),
     {ok, Req, State}.
