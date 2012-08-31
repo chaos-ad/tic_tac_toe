@@ -6,7 +6,7 @@ start_link() ->
         {'_', [
                 {[<<"static">>, '...'], cowboy_http_static,
                     [{directory, {priv_dir, tic_tac_toe, [<<"static">>]}}]},
-                {[<<"play">>, '_'], tic_tac_toe_ws_handler, []}
+                {[<<"play">>, '_', '_'], tic_tac_toe_ws_handler, []}
             ]
         }
     ],
