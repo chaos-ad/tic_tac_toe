@@ -30,13 +30,13 @@ handle(Req, State) ->
 websocket_init(_TransportName, Req, _Opts) ->
     {[<<"play">>, Gid, UserId], Req} = cowboy_http_req:path(Req),
 
-    pg2:create({play_handler, Gid}),
+    pg2:create({web_handler, Gid}),
     case lists:member(self(), pg2:get_members({play_handler, Gid})) of
-        false -> pg2:join({play_handler, Gid}, self());
+        false -> pg2:join({web_handler, Gid}, self());
         true -> ok
     end,
 
-    global:register_name({play_handler, Gid, UserId}, self()),
+    global:register_name({web_handler, Gid, UserId}, self()),
 
     case global:whereis_name({glm, Gid}) of
         undefined ->
@@ -56,7 +56,7 @@ websocket_handle({text, Msg}, Req, State=#state{gid=Gid, userid=Uid}) ->
     gl_control:send_actions(Gid, Uid, [{<<"front_msg">>, Msg}]),
     {ok, Req, State}.
 
-websocket_info({send_message, Msg}, Req, State) ->
+websocket_info({send_message, Msg, _Args}, Req, State) ->
     {reply, {text, Msg}, Req, State};
 
 websocket_info(stop_game, Req, State) ->
