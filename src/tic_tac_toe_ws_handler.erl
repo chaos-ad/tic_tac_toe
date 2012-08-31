@@ -49,7 +49,7 @@ websocket_init(_TransportName, Req, _Opts) ->
     {ok, Req, #state{gid=Gid, userid=UserId}}.
 
 websocket_handle({text, Msg}, Req, State=#state{gid=Gid, userid=Uid}) ->
-    gl_control:send_actions(Gid, Uid, [{<<"front_msg">>, Msg}]),
+    gl_control:send_actions(Gid, Uid, [{<<"front_msg">>, [Msg]}]),
     {ok, Req, State}.
 
 websocket_info({send_message, Msg, _Args}, Req, State) ->
