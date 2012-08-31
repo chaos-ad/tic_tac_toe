@@ -18,7 +18,8 @@ init({_Any, http}, Req, []) ->
     end.
 
 handle(Req, State) ->
-    {ok, Html} = file:read_file([code:priv_dir(mpserver), "/static/play.html"]),
+    {ok, Html} = file:read_file([tic_tac_toe_helpers:priv_dir_path(tic_tac_toe),
+            "/static/play.html"]),
     Headers = [{'Content-Type', <<"text/html">>}],
     {ok, Req2} = cowboy_http_req:reply(200, Headers, Html, Req),
     {ok, Req2, State}.
