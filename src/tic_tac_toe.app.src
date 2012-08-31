@@ -1,0 +1,13 @@
+{application, tic_tac_toe, [
+    {description, ""},
+    {vsn, "1"},
+    {registered, []},
+    {applications, [
+        kernel,
+        stdlib,
+        lager,
+        cowboy
+    ]},
+    {mod, { tic_tac_toe_app, [] }},
+    {env, []}
+]}.
