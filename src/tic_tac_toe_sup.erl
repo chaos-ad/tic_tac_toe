@@ -19,9 +19,32 @@ start_link() ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 init([]) ->
+    start_webserver(),
     {ok, { {one_for_one, 5, 10}, [
-        ?CHILD(tic_tac_toe_web),
         ?CHILD(ws_mpserver)
     ]} }.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+start_webserver() ->
+    {ok, ListenPort} = application:get_env(tic_tac_toe, listen_port),
+    {ok, _} = cowboy:start_listener(tic_tac_toe_ws_handler, 2,
+        cowboy_tcp_transport, [{port, ListenPort}],
+        cowboy_http_protocol, [{dispatch, dispatch()}]
+    ).
+
+dispatch() ->
+    [
+        {'_', [
+                {[<<"static">>, '...'], cowboy_http_static,
+                    [
+                        {directory, {priv_dir, tic_tac_toe, [<<"static">>]}},
+                        {mimetypes, [
+                            {<<".html">>, [<<"text/html">>]},
+                            {<<".js">>, [<<"application/javascript">>]}
+                        ]}
+                    ]},
+                {[<<"play">>, '_', '_'], tic_tac_toe_ws_handler, []}
+            ]
+        }
+    ].

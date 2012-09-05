@@ -1,10 +1,14 @@
 %%% @doc Receive commands from gl_mpserver and pass them forward
 -module(ws_mpserver).
 
--export([start_link/0]).
+-export([start_link/0, init/1]).
 
 start_link() ->
-    {ok, spawn_link(fun loop/0)}.
+    proc_lib:start_link(?MODULE, init, [self()]).
+
+init(Parent) ->
+    proc_lib:init_ack(Parent, {ok, self()}),
+    loop().
 
 loop() ->
     application:set_env(gl_service, mpserver_node, self()),
