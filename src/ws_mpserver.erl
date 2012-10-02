@@ -22,11 +22,17 @@ loop() ->
     loop().
 
 -spec get_recipients(gl_mpserver_types:gid(), gl_types:recipient()) -> list(pid()).
-get_recipients(Gid, all) ->
-    pg2:get_members({web_handler, Gid});
+get_recipients(Gid, Rcpt) ->
+    lists:filter(fun(X) -> X =/= undefined end, do_get_recipients(Gid, Rcpt)).
 
-get_recipients(Gid, UserId) when is_binary(UserId) ->
+do_get_recipients(Gid, all) ->
+    case pg2:get_members({web_handler, Gid}) of
+        Pids when is_list(Pids) -> Pids;
+        {error, _} -> []
+    end;
+
+do_get_recipients(Gid, UserId) when is_binary(UserId) ->
     [global:whereis_name({web_handler, Gid, UserId})];
 
-get_recipients(Gid, UserIds) when is_list(UserIds) ->
-    lists:flatten([get_recipients(Gid, UserId) || UserId <- UserIds]).
+do_get_recipients(Gid, UserIds) when is_list(UserIds) ->
+    lists:flatten([do_get_recipients(Gid, UserId) || UserId <- UserIds]).
