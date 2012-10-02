@@ -6,7 +6,7 @@
         kernel,
         stdlib,
         cowboy,
-        gl_wrapper_lua
+        gl_wrapper_js
     ]},
     {mod, { tic_tac_toe_app, [] }},
     {env, []}
