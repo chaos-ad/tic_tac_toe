@@ -1,8 +1,8 @@
-*.kdev4
 ebin
 deps
+logs
+*.kdev4
+.*.swp
 erl_crash.dump
 .eunit
-.*.swp
-logs
 /rel/tic_tac_toe

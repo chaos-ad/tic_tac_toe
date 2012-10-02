@@ -16,18 +16,18 @@ end
 
 function handle_action(user, action, args, state)
     if #state.users < 2 then
-        return "ok", state, {{message={recipients={user}, cmd="screw you", args=""}}}
+        return "ok", state, {{message={recipients={user}, cmd="screw you", args={}}}}
     end
 
     if state.turn ~= user then
-        return "ok", state, {{message={recipients={user}, cmd="screw you", args=""}}}
+        return "ok", state, {{message={recipients={user}, cmd="screw you", args={}}}}
     end
 
     str = args[1]
     num = str:sub((str:find(' '))+1)
     cur = get_pos(num, state.board)
     if cur ~= '-' then
-        return "ok", state, {{message={recipients={user}, cmd="screw you", args=""}}}
+        return "ok", state, {{message={recipients={user}, cmd="screw you", args={}}}}
     end
 
     if user == state.users[1] then
@@ -40,14 +40,21 @@ function handle_action(user, action, args, state)
 
     set_pos(val, num, state.board)
     if finished(state.board) then
-        return "stop", state, {
-            {message={recipients={user}, cmd="win", args=""}},
-            {message={recipients={state.turn}, cmd="loose", args=""}},
-            {message={recipients="all", cmd="board " .. board2string(state.board), args=""}}
+        state.board={{'-','-','-'},{'-','-','-'},{'-','-','-'}}
+        return "ok", state, {
+            {message={recipients={user}, cmd="win", args={}}},
+            {message={recipients={state.turn}, cmd="loose", args={}}},
+            {message={recipients="all", cmd="board " .. board2string(state.board), args={}}}
+        }
+    elseif draw(state.board) then
+        state.board={{'-','-','-'},{'-','-','-'},{'-','-','-'}}
+        return "ok", state, {
+            {message={recipients="all", cmd="draw", args={}}},
+            {message={recipients="all", cmd="board " .. board2string(state.board), args={}}}
         }
     else
         return "ok", state, {
-            {message={recipients="all", cmd="board " .. board2string(state.board), args=""}}
+            {message={recipients="all", cmd="board " .. board2string(state.board), args={}}}
         }
     end
 end
@@ -56,14 +63,14 @@ function handle_user_join(user, state)
     table.insert(state.users, user)
     if #state.users == 2 then
         state.turn=state.users[1]
-        return "ok", state, {{message={recipients="all", cmd="start_game", args=""}}}
+        return "ok", state, {{message={recipients="all", cmd="start_game", args={}}}}
     else
         return "ok", state, {}
     end
 end
 
 function handle_user_leave(user, state)
-    return "ok", state, {{message={recipients="all", cmd="draw", args=""}}}
+    return "ok", state, {{message={recipients="all", cmd="draw", args={}}}}
 end
 
 
@@ -85,7 +92,16 @@ function check(v1, v2, v3)
     return v1 == v2 and v2 == v3 and v3 ~= '-'
 end
 
-
+function draw(table)
+    for i=1,3 do
+        for j=1,3 do
+            if (table[i][j] == '-') then
+                return false
+            end
+        end
+    end
+    return true
+end
 
 function board2string(table)
     return

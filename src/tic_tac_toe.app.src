@@ -5,11 +5,8 @@
     {applications, [
         kernel,
         stdlib,
-        lager,
         cowboy,
-        gl_service,
-        poolboy,
-        moon
+        gl_wrapper_lua
     ]},
     {mod, { tic_tac_toe_app, [] }},
     {env, []}

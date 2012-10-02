@@ -8,10 +8,10 @@ start_link() ->
 
 init(Parent) ->
     proc_lib:init_ack(Parent, {ok, self()}),
+    application:set_env(gl_service, mpserver_node, self()),
     loop().
 
 loop() ->
-    application:set_env(gl_service, mpserver_node, self()),
     receive
         {send_message, Gid, Recipients, Msg, Args} ->
             Pids = get_recipients(Gid, Recipients),
